@@ -1,0 +1,171 @@
+
+{% extends "sidebar.html" %}
+{% load static %}
+{% block content %}
+        <!-- <div class="content-wrapper">
+          <div  class = "container-fluid">
+      
+
+          </div>
+        </div> -->
+<section class="content-wrapper">
+  <div class="container" style="margin-top: 20px;">
+    <div class="card">
+      <div class="card-header bg-info">
+          <h4 class="text-light">เมนูเพิ่มข้อมูลลูกค้า</h4>
+      </div>
+      <div class="card-body">
+          <form action="/Custormer_MN/" method="post">
+              {% csrf_token %}
+              <div class="form-group">
+                  <label for="itemcode">ชื่อลูกค้า:</label>
+                  <input type="text" class="form-control" id="cus_name" name="cus_name" required>
+              </div>
+              
+              <div class="form-group">
+                  <label for="description">Description:</label>
+                  <textarea class="form-control" id="description" name="description" required></textarea>
+              </div>
+              <button type="button" onclick="savedata()" class="btn btn-info">เพิ่มข้อมูลลูกค้า</button>
+          </form>
+      </div>  
+  </div>
+ <div class="card">
+      <div class="card-header bg-info">
+          <h4 class="text-light">ข้อมูลลูกค้าในระบบทั้งหมด</h4>
+      </div>
+      <div class="card-body">
+          <table id="example" class="display" style="width:100%">
+              <thead>
+                  <tr>
+                      
+                      <th>ชื่อบริษัท.</th>
+                      <th>ข้อมูลติดต่อ</th>
+                      <th>เมนูจัดการ</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for i in data %}
+                      <tr>
+                          <td>{{i.customer_name}}</td>
+                          <td>{{i.customer_contact}}</td>
+                          <td ><button class="btn btn-danger" onclick="delete_data({{i.custormer_id}})">ลบข้อมูล</button></td>
+                      </tr>
+                  {% endfor %}
+              </tbody>
+              <tfoot>
+                  <tr>
+                    <th>ชื่อบริษัท.</th>
+                    <th>ข้อมูลติดต่อ</th>
+                    <th>เมนูจัดการ</th>
+                      
+                  </tr>
+              </tfoot>
+          </table>
+      </div>
+ </div>
+  </div>
+
+</section>
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable( {
+        dom: 'Bfrtip',
+        buttons: [
+            'copyHtml5',
+            'excelHtml5',
+            'csvHtml5',
+            'pdfHtml5'
+        ]
+    } );
+} );
+var id_save;
+function savedata(){
+    $.ajax({
+        type: "POST",
+        url: "/Custormer_MN/", 
+        dataType: 'json',
+            async: false,
+            //json object to sent to the authentication url
+            data: {
+               csrfmiddlewaretoken: '{{ csrf_token }}' ,
+               "action":'add',
+               "cus_name":$("#cus_name").val(),
+               "cus_dis":$("#description").val(),
+            },
+        success: function(data)
+        {	
+            console.log(data)
+            Swal.fire(
+                  'บันทึกข้อมูลสำเร็จ!',
+                  'Your file has been deleted.',
+                  'success'
+                     )
+                setTimeout(function() {
+                    location.reload();  
+                    // dt.row(colum).remove().draw();
+                }, 1000);   
+        }
+    });
+}
+function delete_data(id){
+
+const swalWithBootstrapButtons = Swal.mixin({
+  customClass: {
+    confirmButton: 'btn btn-success',
+    cancelButton: 'btn btn-danger'
+  },
+  buttonsStyling: false
+})
+
+swalWithBootstrapButtons.fire({
+  title: 'Are you sure?',
+  text: "You won't be able to revert this!",
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonText: 'Yes, delete it!',
+  cancelButtonText: 'No, cancel!',
+  reverseButtons: true
+}).then((result) => {
+  if (result.isConfirmed) {
+      $.ajax({
+        type: "POST",
+        url: "/Custormer_MN/", 
+        dataType: 'json',
+            async: false,
+            //json object to sent to the authentication url
+            data: {
+               csrfmiddlewaretoken: '{{ csrf_token }}' ,
+               "action":'delete',
+               "id":id,
+            },
+        success: function(data)
+        {	
+            if(data['data']=='ok'){
+              
+                Swal.fire('ลบข้อมูลเรียบร้อย!', '', 'success')
+                setTimeout(function() {
+                    location.reload();  
+                    // dt.row(colum).remove().draw();
+                }, 1000);     
+            
+                }else{
+                        swalWithBootstrapButtons.fire(
+                          'Cancelled',
+                          'Not found data',
+                          'error')
+                }
+        }
+    });
+      // alert(1234)
+  } else if (
+    /* Read more about handling dismissals below */
+    result.dismiss === Swal.DismissReason.cancel
+  ) {
+    
+  }
+})
+}
+
+</script>
+{% endblock content%}

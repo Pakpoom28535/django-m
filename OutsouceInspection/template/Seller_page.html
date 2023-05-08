@@ -1,0 +1,183 @@
+{% extends "sidebar.html" %}
+
+{% block content %}
+<style>
+  .yellow {
+  background-color: #f1c40f;
+  box-shadow: 0px 5px 0px 0px #D8AB00;
+}
+
+.yellow:hover {
+  background-color: #FFDE29;
+}
+</style>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h4>เมนูการสร้างใบสรุปรายการสินค้าและราคา</h4>
+        </div>
+        <div class="card-body">
+
+
+          <form id="frm-example" class= "mt-3" action="/Seller_export/" method="POST">
+            {% csrf_token %}
+            <div class="row">
+              <div class="form-group">
+                <label for="description">โปรดเลือกชื่อลูกค้าเพื่อทำรายงานสรุปรายการสินค้า:</label>
+                <select class="custom-select text-center" id="cus_id" name = "cus_id" required>
+                    <option selected ></option>
+                    {% for i in customer %}
+                        <option  value="{{i.custormer_id}}">{{i.customer_name}}</option>
+                    {% endfor %}
+                </select>
+              </div>
+            </div>
+            <table id="example" class="table table-striped table-bordered" cellspacing="0" width="100%">
+               <thead>
+                  <tr>
+                     <th></th>
+                     <th>หมายเลขรหัสสินค้า</th>
+                     <th>ชื่อรายการสินค้า</th>
+                     <th>ตำแหน่งในคลังสินค้า</th>
+                     <th>ชื่อตำแหน่ง</th>
+                     <th>จำนวน</th>
+                     <th>รวมราคา</th>
+                  </tr>
+               </thead>
+               <tbody>
+                {% for i in list_arrival %}
+                      <tr id="{{i.arrival_id}}">
+                        <td></td> 
+                        <td><input type="text" name="name{{i.arrival_id}}" value="{{i.arrival_id}}" hidden>{{i.Product_ob.product_itemno}}</td>
+                        <td>{{i.Product_ob.product_description}}</td> 
+                        <td>{{i.location_arrival_no}}</td>
+                        <td>{{i.location_arrival_name}}</td>
+                        <td>{{i.qty}}</td>
+                        <td>{{i.total_price}}</td>
+                    </tr>
+                {% endfor %}
+              
+               </tbody>
+               <tfoot>
+                  <tr>
+                    <th></th>
+                    <th>หมายเลขรหัสสินค้า</th>
+                    <th>ชื่อรายการสินค้า</th>
+                    <th>ตำแหน่งในคลังสินค้า</th>
+                    <th>ชื่อตำแหน่ง</th>
+                    <th>จำนวน</th>
+                    <th>รวมราคา</th>
+                  </tr>
+               </tfoot>
+            </table>
+            
+            <hr>
+            
+          
+
+            <button class="btn yellow">สร้างใบสรุปรายการสินค้า</button>
+            <div hidden>
+              <p><b>Selected rows data:</b></p>
+              <pre id="example-console-rows"></pre>
+              
+              <p><b>Form data as submitted to the server:</b></p>
+              <pre id="example-console-form"></pre>
+            </div>
+
+            
+            </form>
+        </div>
+      </div>
+
+  </div>
+</div>
+  <script>
+    $(document).ready(function() {
+    var table = $('#example').DataTable({
+      
+        'columnDefs': [{
+            'targets': 0,
+            'checkboxes': {
+                'selectRow': true
+            }
+        }],
+        'select': {
+            'style': 'multi'
+        },
+        'fnCreatedRow': function(nRow, aData, iDataIndex) {
+            $(nRow).attr('data-id', aData.DT_RowId); // or whatever you choose to set as the id
+            $(nRow).attr('id', 'id_' + aData.DT_RowId); // or whatever you choose to set as the id
+        },
+        'order': [
+            [1, 'asc']
+        ]
+    });
+    // Handle form submission event 
+    $('#frm-example').on('submit', function(e) {
+        var form = this;
+        var rows = $(table.rows({
+            selected: true
+        }).$('input[type="checkbox"]').map(function() {
+            return $(this).prop("checked") ? $(this).closest('tr').attr('data-id') : null;
+        }));
+        //console.log(table.column(0).checkboxes.selected())
+        // Iterate over all selected checkboxes
+        rows_selected = [];
+        $.each(rows, function(index, rowId) {
+            console.log(rowId)
+            // Create a hidden element 
+            rows_selected.push(rowId);
+            $(form).append(
+                $('<input>')
+                .attr('type', 'hidden')
+                .attr('name', 'id[]')
+                .val(rowId)
+            );
+        });
+
+        // FOR DEMONSTRATION ONLY
+        // The code below is not needed in production
+
+        // Output form data to a console     
+        $('#example-console-rows').text(rows_selected.join(","));
+
+        // Output form data to a console     
+        $('#example-console-form').text($(form).serialize());
+
+        // Remove added elements
+        $('input[name="id\[\]"]', form).remove();
+
+        // Prevent actual form submission
+        // e.preventDefault();
+        Swal.fire('บันทึกข้อมูลเรียบร้อย!', '', 'success')
+                setTimeout(function() {
+                    location.reload();  
+                    // dt.row(colum).remove().draw();
+                }, 1000);     
+      //   $.ajax({
+      //     type: "POST",
+      //     url: "/Seller_export/", 
+
+      //         //json object to sent to the authentication url
+      //         data: {
+      //         csrfmiddlewaretoken: '{{ csrf_token }}' ,
+      //         "arrival_id":rows_selected,
+      //         },
+      //     success: function(response)
+      //     {	
+      //       var blob = new Blob([response], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      //       var link = document.createElement('a');
+      //       link.href = window.URL.createObjectURL(blob);
+      //       link.download = 'my_excel_file.xlsx';
+      //       link.click();
+      //     },error: function(xhr, status, error) {
+      //   // handle the error
+      //         console.log(error);
+      //     }
+      // });
+    });
+});
+  </script>
+
+{% endblock content%}

@@ -1,0 +1,328 @@
+
+{% extends "sidebar.html" %}
+{% load static %}
+{% block content %}
+<section class="content-wrapper">
+    <div class="container-fluid">
+        <h4>เมนูจัดการตำแหน่งสินค้า Location Management</h4>
+        <div class="card">
+            <div class="card-body">
+                <h6>Function การจัดการตำแหน่งของ Location</h6>
+                <button onclick="add_lo()" class="btn btn-primary mt-4">เพิ่มตำแหน่ง</button>
+       
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg mt-2 mb-4">
+                            
+                                <label for="formGroupExampleInput">Rack Name</label>
+        
+                                <select class="custom-select text-center" id="rack_name2">
+                                    <option selected ></option>
+                                    {% for i in location %}
+                                    <option  value="{{i.rack_name_id}}">{{i.rack_name}}</option>
+                                    {% endfor %}
+                                </select>
+                         
+                        </div>
+                        <div class="col-lg mt-2 mb-4">
+                          
+                                    <label for="formGroupExampleInput">Rack Locations</label>
+        
+                                    <select class="custom-select text-center" id="rack_location2">
+                                        <option selected ></option>
+                                        <option  value="A">1</option>
+                                        <option  value="B">2</option>
+                                        <option  value="C">3</option>
+                                        <option  value="D">4</option>
+                                        <option  value="E">5</option>
+                                   
+                                    </select>
+                       
+                        </div>
+    
+                    </div>
+                    <div class="mt-3">
+                        <table id="example" class="display" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Location Name</th>
+                                    <th>Rack Name</th>
+                                    <th>Rack No</th>
+                                    <th>เมนูจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- <tr>
+                                    <td>1</td>
+                                    <td>TF0105</td>
+                                    <td>F</td>
+                                    <td>F1</td>
+                                    <td ><button class="btn btn-warning" onclick="Chage_data({{i.id}})">แก้ไขข้อมูล</button> &nbsp; <button class="btn btn-danger" onclick="delete_data({{i.id}})">ลบข้อมูล</button></td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>TF0106</td>
+                                    <td>F</td>
+                                    <td>F1</td>
+                                    <td ><button class="btn btn-warning" onclick="Chage_data({{i.id}})">แก้ไขข้อมูล</button> &nbsp; <button class="btn btn-danger" onclick="delete_data({{i.id}})">ลบข้อมูล</button></td>
+                                </tr> -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Location Name</th>
+                                    <th>Rack Name</th>
+                                    <th>Rack No</th>
+                                    <th>เมนูจัดการ</th>
+                                    
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+          
+            </div>
+        </div>
+    
+        <div class="modal fade" id="modalcreate" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">เพิ่มตำแหน่ง Location เข้าไปในระบบ</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg mt-2 mb-4">
+                                
+                                    <label for="formGroupExampleInput">Rack Name</label>
+            
+                                    <select class="custom-select text-center" id="rack_name">
+                                        <option selected ></option>
+                                        {% for i in location %}
+                                            <option  value="{{i.rack_name_id}}">{{i.rack_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                             
+                            </div>
+                            <div class="col-lg mt-2 mb-4">
+                              
+                                        <label for="formGroupExampleInput">Rack No</label>
+            
+                                        <select class="custom-select text-center" id="rack_location">
+                                            <option selected ></option>
+                                            
+                                       
+                                        </select>
+                           
+                            </div>
+        
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อของ Location ที่ต้องการสร้าง</label>
+                            <input type="text" class="form-control" id="new_lg_name" onkeyup="convertToUpperCase()">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" onclick="save()">SAVE</button>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+</section>
+<script>
+var dt ;
+        $(document).ready(function() {
+           dt = $('#example').DataTable( {
+                dom: 'Bfrtip',
+                buttons: [
+                    'copyHtml5',
+                    'excelHtml5',
+                    'csvHtml5',
+                    'pdfHtml5'
+                ]
+            } );
+
+            $("#rack_name").change(function() {
+                var selectedOption = $(this).children("option:selected").val();
+                $.ajax({
+                    type: "POST",
+                    url: "/Location_mn/", 
+                    dataType: 'json',
+                        async: false,
+                        //json object to sent to the authentication url
+                        data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                        "action":'view_list',
+                        "id":selectedOption,
+                        },
+                    success: function(data)
+                    {	
+                        console.log(data)
+                        $("#rack_location").empty()
+                        $("#rack_location").append('<option value="" selected disabled hidden></option>')
+                        for(i=0;i<data['data'].length;i++){
+                            $("#rack_location").append("<option value="+ data['data'][i]['rack_id'] +">" +  data['data'][i]['rack_no'] +"</option>");
+                        }
+                    }
+                });
+
+            });
+            $("#rack_name2").change(function() {
+                var selectedOption = $(this).children("option:selected").val();
+                $.ajax({
+                    type: "POST",
+                    url: "/Location_mn/", 
+                    dataType: 'json',
+                        async: false,
+                        //json object to sent to the authentication url
+                        data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                        "action":'view_list',
+                        "id":selectedOption,
+                        },
+                    success: function(data)
+                    {	
+                        console.log(data)
+                        $("#rack_location2").empty()
+                        $("#rack_location2").append('<option value="" selected disabled hidden></option>')
+                        for(i=0;i<data['data'].length;i++){
+                            $("#rack_location2").append("<option value="+ data['data'][i]['rack_id'] +">" +  data['data'][i]['rack_no'] +"</option>");
+                        }
+                    }
+                });
+
+            });
+            $("#rack_location2").change(function() {
+               
+                var selectedOption = $(this).children("option:selected").val();
+                $.ajax({
+                    type: "POST",
+                    url: "/Location_mn/", 
+                    dataType: 'json',
+                        async: false,
+                        //json object to sent to the authentication url
+                        data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                        "action":'view_rack',
+                        "id":selectedOption,
+                        },
+                    success: function(data)
+                    {	
+                        data = data['data']
+                        console.log(data,data[0]['location_name'])
+                        dt.clear();
+                        for(var i=0;i<data.length;i++){
+                            
+                            dt.row.add([i+1,data[i]['location_name'],data[i]['rack_name'],data[i]['rack_location'],'<button class="btn btn-danger" onclick="delete_data('+ data[i]['id'] +','+ i+1 +')">ลบข้อมูล</button>']).draw(false);
+                        }
+                        
+                    }   
+                });
+
+            });
+        } );
+function add_lo(){
+    $('#modalcreate').modal('show');
+}
+function convertToUpperCase() {
+  var inputElement = document.getElementById("new_lg_name");
+  inputElement.value = inputElement.value.toUpperCase();
+}
+
+function delete_data(id,colum){
+    Swal.fire({
+    title: 'คุณต้องการลบLocationหรือไม่?',
+    showDenyButton: true,
+    showCancelButton: true,
+    confirmButtonText: 'Save',
+    denyButtonText: `Don't save`,
+    }).then((result) => {
+    /* Read more about isConfirmed, isDenied below */
+    if (result.isConfirmed) {
+        $.ajax({
+            type: "POST",
+            url: "/Location_mn/", 
+            dataType: 'json',
+                async: false,
+                //json object to sent to the authentication url
+                data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                "action":'delete',
+                "id":id,
+              
+                },
+            success: function(data)
+            {	
+                if(data['data'] == 'ok'){
+                    Swal.fire('ลบข้อมูลเรียบร้อย!', '', 'success')
+                    setTimeout(function() {
+                        location.reload();  
+                        // dt.row(colum).remove().draw();
+                    }, 1000);     
+                  
+                }
+                
+            }   
+        });
+
+
+        
+    } else if (result.isDenied) {
+        
+    }
+    })
+}
+function save(){
+    var location_id = $('#rack_location').find(":selected").val();
+    var new_name = $("#new_lg_name").val()
+    Swal.fire({
+    title: 'คุณต้องการบันทึกชื่อ Locationเข้าไปในระบบหรือไม่?',
+    showDenyButton: true,
+    showCancelButton: true,
+    confirmButtonText: 'Save',
+    denyButtonText: `Don't save`,
+    }).then((result) => {
+    /* Read more about isConfirmed, isDenied below */
+    if (result.isConfirmed) {
+        $.ajax({
+            type: "POST",
+            url: "/Location_mn/", 
+            dataType: 'json',
+                async: false,
+                //json object to sent to the authentication url
+                data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                "action":'add',
+                "id":location_id,
+                "name":new_name,
+                },
+            success: function(data)
+            {	
+                if(data['data'] == 'ok'){
+                    Swal.fire('Saved!', '', 'success')
+                    setTimeout(function() {
+                        location.reload();  
+                    }, 1000);     
+                  
+                }
+                
+            }   
+        });
+
+
+        
+    } else if (result.isDenied) {
+        
+    }
+    })
+}
+</script>
+{% endblock content%}

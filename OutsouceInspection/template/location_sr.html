@@ -1,0 +1,412 @@
+
+{% extends "sidebar.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .btn_manu{
+        width: 15rem;
+        font-size: 2rem;
+        height: 15rem;
+        text-align: center;
+        margin-top: auto;
+        padding:  4rem;
+        border-radius: 20px;
+    }
+    .five h1 {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700; color:#202020;
+  text-transform: uppercase;
+  word-spacing: 1px; letter-spacing:2px;
+}
+.five h1 span {
+  margin-top: 40px;
+  text-transform: none;
+  font-size:.75em;
+  font-weight: normal;
+  font-style: italic; font-family: "Playfair Display","Bookman",serif;
+  color:#999; letter-spacing:-0.005em; word-spacing:1px;
+  letter-spacing:none;
+}
+
+</style>
+<section class="content-wrapper h-100 d-flex align-items-center justify-content-center">
+    <div class="container-fluid">
+        <div class="five mt-5" >
+            <h1>เมนูการนำเข้า-เบิกออกสินค้า
+                <br>
+              <span>เลือกเมนูโดยการกดปุ่มด้านล่าง</span>
+            </h1>
+          </div>
+      
+        <div class="container">
+            <diV class="row">
+                <div class="col-lg-6">
+                    <div class="p-5 d-flex justify-content-center">
+                        <a class="btn btn-outline-info  btn-block btn_manu" onclick="addata()">เบิกสินค้า</a>
+                     
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="p-5 d-flex justify-content-center">
+                        <a class="btn btn-outline-info btn-block btn_manu" onclick="outdata()">นำเข้าสินค้า</a>
+                    </div>
+                </div>
+            </diV>
+
+        </div>
+       
+    
+        <div class="modal fade" id="formout" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">ฟอร์มบันทึกการเบิกสินค้า</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                    <form action="/Product/" method="post">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                        
+                            <label for="itemnumber"> โปรดสแกนไอเท็มโค๊ดเพื่อค้นหาสินค้าในระบบ Scan Item Number:</label>
+                            <input type="text" class="form-control" id="itemnumber" name="itemnumber" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg">
+                                <div class="form-group">
+                                    <label for="description">ชื่อสินค้า Description:</label>
+                                    <input class="form-control  bg-white" id="description" name="description" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="price">ราคา Price:</label>
+                                    <input type="number" class="form-control  bg-white" id="price" name="price" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="count">จำนวนคงเหลือในระบบ</label>
+                                    <input type="number" class="form-control  bg-white" id="count" name="price" readonly required>
+                                </div>
+
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="description">ตำแหน่งของสินค้าในคลัง:</label>
+                                    <input type="text" class="form-control  bg-white" id="loc_no" name="description" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">ชื่อตำแหน่งของสินค้า:</label>
+                                    <input  type="text"  class="form-control  bg-white" id="loc_name" name="loc_name" readonly required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">โปรดใส่จำนวนที่ต้องการเบิก Quantity:</label>
+                            <input type="number" class="form-control" id="out_quantity" name="out_quantity"  required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">รวมเป็นเงิน:</label>
+                            <input type="number" class="form-control bg-white" id="totalprice" name="totalprice" readonly  required>
+                        </div>
+                       
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-info" onclick="out_data_save()">เพิ่มรายการเบิกสินค้า</button>
+                        </div>
+                    </form>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <div class="modal fade" id="modalcreate" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">ฟอร์มบันทึกการนำเข้าสินค้า</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                    <form action="/Location_sr/" method="post">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                        
+                            <label for="itemnumber"> โปรดสแกนไอเท็มโค๊ดเพื่อค้นหาสินค้าในระบบ Scan Item Number:</label>
+                            <input type="text" class="form-control" id="in_itemnumber" name="itemnumber" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg">
+                                <div class="form-group">
+                                    <label for="description">ชื่อสินค้า Description:</label>
+                                    <input class="form-control  bg-white" id="in_description" name="description" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="price">ราคา Price:</label>
+                                    <input type="number" class="form-control  bg-white" id="in_price" name="price" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="count">จำนวนคงเหลือในระบบ</label>
+                                    <input type="number" class="form-control  bg-white" id="in_count" name="instock_qty" readonly required>
+                                </div>
+
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="description">ชื่อของชั้นวางที่ต้องการเพิ่ม:</label>
+                                    <select class="custom-select text-center" id="rack_name" name = "rack_name">
+                                        <option selected ></option>
+                                        {% for i in location %}
+                                            <option  value="{{i.rack_name_id}}">{{i.rack_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">ลำดับในชั้นวางที่ต้องการเพิ่มสินค้า:</label>
+                                    <select class="custom-select text-center" id="rack_location" name="rack_no">
+                                        <option selected ></option>
+                                        
+                                   
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">ตำแหน่งที่ว่างที่สามารถเพิ่มได้:</label>
+                                    <select class="custom-select text-center" id="list_name" name="location_name">
+                                        <option selected ></option>
+                                        
+                                   
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">โปรดใส่จำนวนที่ต้องการเพิ่มเข้าไปในระบบ Quantity:</label>
+                            <input type="number" class="form-control" id="in_quantity" name="add_quantity"  required>
+                        </div>
+
+                       
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-info" >เพิ่มรายการสินค้า</button>
+                        </div>
+                    </form>
+                </div>
+
+              </div>
+            </div>
+          </div>  
+    </div>
+
+</section>
+
+<script>
+    function addata(){
+        $("#formout").modal('show');
+    }
+    function outdata(){
+        $("#modalcreate").modal('show');
+    }
+    var dt;
+    $(document).ready(function() {
+            $('#itemnumber').on('input', function() {
+                var inputValue = $(this).val();
+                if (inputValue.length == 15) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Location_sr/", 
+                        dataType: 'json',
+                            async: false,
+                            //json object to sent to the authentication url
+                            data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                            "action":'view_detail',
+                            "itemno":inputValue,
+                            },
+                        success: function(data)
+                        {	
+                            console.log(data['loc_name'])
+                            $("#loc_no").val(data['rackno'])
+                            $("#loc_name").val(data['loc_name'])
+                            data = data['data']
+                            $("#description").val(data[0]['product_description']) 
+                            $("#price").val(data[0]['product_price']) 
+                            $("#count").val(data[0]['product_qty'])
+                            
+                            
+                        }
+                    });
+
+                }
+            });
+            $('#in_itemnumber').on('input', function() {
+                var inputValue = $(this).val();
+                if (inputValue.length == 15) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Location_sr/", 
+                        dataType: 'json',
+                            async: false,
+                            //json object to sent to the authentication url
+                            data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                            "action":'view_detail',
+                            "itemno":inputValue,
+                            },
+                        success: function(data)
+                        {	
+                            console.log(data)
+                            data = data['data']
+                            $("#in_description").val(data[0]['product_description']) 
+                            $("#in_price").val(data[0]['product_price'])
+                            $("#in_count").val(data[0]['product_qty']) 
+                        }
+                    });
+
+                }
+            });
+            $("#rack_name").change(function() {
+                var selectedOption = $(this).children("option:selected").val();
+                $.ajax({
+                    type: "POST",
+                    url: "/Location_mn/", 
+                    dataType: 'json',
+                        async: false,
+                        //json object to sent to the authentication url
+                        data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                        "action":'view_list',
+                        "id":selectedOption,
+                        },
+                    success: function(data)
+                    {	
+                        console.log(data)
+                        $("#rack_location").empty()
+                        $("#rack_location").append('<option value="" selected disabled hidden></option>')
+                        for(i=0;i<data['data'].length;i++){
+                            $("#rack_location").append("<option value="+ data['data'][i]['rack_id'] +">" +  data['data'][i]['rack_no'] +"</option>");
+                        }
+                    }
+                });
+
+            });
+            $("#rack_location").change(function() {
+                var selectedOption = $(this).children("option:selected").val();
+                $.ajax({
+                    type: "POST",
+                    url: "/Location_sr/", 
+                    dataType: 'json',
+                        async: false,
+                        //json object to sent to the authentication url
+                        data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                        "action":'view_list',
+                        "id":selectedOption,
+                        },
+                    success: function(data)
+                    {	
+                        console.log(data)
+                        $("#list_name").empty()
+                        $("#list_name").append('<option value="" selected disabled hidden></option>')
+                        for(i=0;i<data['data'].length;i++){
+                            $("#list_name").append("<option value="+ data['data'][i]['location_id'] +">" +  data['data'][i]['location_name'] +"</option>");
+                        }
+                    }
+                });
+            });
+            $('form').submit(function(event) {
+                        event.preventDefault();
+                    console.log(parseInt($("#in_count").val()),parseInt($("#in_quantity").val()))
+                     if(parseInt($("#in_count").val()) < parseInt($("#in_quantity").val())){
+                        Swal.fire(
+                                'โปรดกรอกจำนวนให้ถูกต้อง',
+                                'จำนวนการเบิกมากกว่าของที่อยู่ใน STORE',
+                                'info'
+                                )
+                     }else{
+                        $.ajax({
+                        url: '/Location_sr/',
+                        type: 'POST',
+                        dataType: 'json',
+                        async: false,
+                        //json object to sent to the authentication url
+                        data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}' ,
+                        "action":'add',
+                        "itemno":$("#in_itemnumber").val(),
+                        "qty":$("#in_quantity").val(),
+                        "location_id":$("#list_name").children("option:selected").val(),
+                        },
+                        success: function(data) {
+                            // handle success response
+                            if(data['data'] == 'ok'){
+                            Swal.fire('บันทึกข้อมูลเรียบร้อย!', '', 'success')
+                            setTimeout(function() {
+                                location.reload();  
+                                // dt.row(colum).remove().draw();
+                            }, 1000);     
+                        
+                        }
+                
+                        },
+                        error: function(xhr, status, error) {
+                            // handle error response
+                        }
+                        });
+                     }
+                       
+            });
+            $('#out_quantity').on('input', function() {
+                var inputValue = $(this).val();
+                var prinve = $("#price").val();
+                var total = inputValue*prinve;
+                $("#totalprice").val(total);
+            });
+    });
+    function out_data_save(){
+        console.log(parseInt($("#in_count").val()),parseInt($("#in_quantity").val()))
+        if(parseInt($("#in_count").val()) < parseInt($("#in_quantity").val())){
+        Swal.fire(
+                'โปรดกรอกจำนวนให้ถูกต้อง',
+                'จำนวนการเบิกมากกว่าของที่อยู่ใน STORE',
+                'info'
+                )
+        }else{
+            $.ajax({
+            url: '/Location_sr/',
+            type: 'POST',
+            dataType: 'json',
+            async: false,
+            //json object to sent to the authentication url
+            data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}' ,
+            "action":'out',
+            "itemno":$("#itemnumber").val(),
+            "qty":$("#out_quantity").val(),
+            "loc_name":$("#loc_no").val(),                            
+            "loc_no":$("#loc_name").val(),
+            "total_price":$("#totalprice").val(),
+            },
+            success: function(data) {
+                // handle success response
+                if(data['data'] == 'ok'){
+                Swal.fire('บันทึกข้อมูลเรียบร้อย!', '', 'success')
+                setTimeout(function() {
+                    location.reload();  
+                    // dt.row(colum).remove().draw();
+                }, 1000);     
+            
+            }
+
+            },
+            error: function(xhr, status, error) {
+                // handle error response
+            }
+            });
+        }
+    }
+</script>
+{% endblock content%}

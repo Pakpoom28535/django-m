@@ -1,0 +1,63 @@
+
+{% extends "sidebar.html" %}
+{% load static %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <table id="example" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>ชื่อบริษัท.</th>
+                            <th>เลขเอกสาร</th>
+                            <th>วันที่สร้างใบเสนอราคา</th>
+                            <th>เมนู</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in po %}
+                      
+                            <tr>
+                                <form method="post" action="/Download/">
+                                    {% csrf_token %}
+                                
+                                <td><input type="text" id ="po_id" name="po_id{{i.po_id}}" value="{{i.po_id}}" hidden>{{i.po_id}}</td>
+                                <td>{{i.Custormer.customer_name}}</td>
+                                <td>{{i.po_name}}</td>
+                                <td>{{i.timeupdate}}</td>
+                                <td ><button type="submit" class="btn btn-info">Download</button></td>
+                                </form>
+                            </tr>
+                        
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>ID</th>
+                            <th>ชื่อบริษัท.</th>
+                            <th>เลขเอกสาร</th>
+                            <th>วันที่สร้างใบเสนอราคา</th>
+                            <th>เมนู</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+        $(document).ready(function() {
+    $('#example').DataTable( {
+        dom: 'Bfrtip',
+        buttons: [
+            'copyHtml5',
+            'excelHtml5',
+            'csvHtml5',
+            'pdfHtml5'
+        ]
+    } );
+} );
+</script>
+{% endblock content%}

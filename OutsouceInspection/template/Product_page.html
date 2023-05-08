@@ -1,0 +1,241 @@
+
+{% extends "sidebar.html" %}
+{% load static %}
+{% block content %}
+        <!-- <div class="content-wrapper">
+          <div  class = "container-fluid">
+      
+
+          </div>
+        </div> -->
+<section class="content-wrapper">
+  <div class="container-fluid">
+    <div class="card">
+      <div class="card-header bg-danger">
+          <h4 class="text-light">เมนูเพิ่มข้อมูลสินค้า</h4>
+      </div>
+      <div class="card-body">
+          <form action="/Product/" method="post">
+              {% csrf_token %}
+              <div class="form-group">
+                  <label for="itemcode">Item Number:</label>
+                  <input type="text" class="form-control" id="itemnumber" name="itemnumber" required>
+              </div>
+              
+              <div class="form-group">
+                  <label for="description">Description:</label>
+                  <textarea class="form-control" id="description" name="description" required></textarea>
+              </div>
+              <div class="form-group">
+                  <label for="price">Price:</label>
+                  <input type="number" class="form-control" id="price" name="price" required>
+              </div>
+  
+              <div class="form-group">
+                  <label for="quantity">Quantity:</label>
+                  <input type="number" class="form-control" id="quantity" name="quantity" required>
+              </div>
+              <button type="submit" class="btn btn-info">เพิ่มรายการสินค้า</button>
+          </form>
+      </div>  
+  </div>
+ <div class="card">
+      <div class="card-header bg-danger">
+          <h4 class="text-light">ข้อมูลสินค้าในระบบทั้งหมด</h4>
+      </div>
+      <div class="card-body">
+          <table id="example" class="display" style="width:100%">
+              <thead>
+                  <tr>
+                      <th>ID.</th>
+                      <th>ItemNo.</th>
+                      <th>Description</th>
+                      <th>Price</th>
+                      <th>Stock Count</th>
+                      <th>Total Price</th>
+                      <th>Updatetime</th>
+                      <th>เมนูจัดการ</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for i in data %}
+                      <tr>
+                          <td>{{i.id}}</td>
+                          <td>{{i.item_number}}</td>
+                          <td>{{i.description}}</td>
+                          <td>{{i.price}}</td>
+                          <td>{{i.qty}}</td>
+                          <td>{{i.total_price}}</td>
+                          <td>{{i.timein}}</td>
+                          <td ><button class="btn btn-warning" onclick="Chage_data({{i.id}})">แก้ไขข้อมูล</button> &nbsp; <button class="btn btn-danger" onclick="delete_data({{i.id}})">ลบข้อมูล</button></td>
+                      </tr>
+                  {% endfor %}
+              </tbody>
+              <tfoot>
+                  <tr>
+                      <th>ID.</th>
+                      <th>ItemNo.</th>
+                      <th>Description</th>
+                      <th>Price</th>
+                      <th>Stock Count</th>
+                      <th>Total Price</th>
+                      <th>Updatetime</th>
+                      <th>เมนูจัดการ</th>
+                      
+                  </tr>
+              </tfoot>
+          </table>
+      </div>
+ </div>
+
+ <div class="modal fade" id="modalcreate" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">เปลี่ยนแปลงข้อมูล</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div class="container-fluid">
+            
+                 
+
+            <div class="form-group">
+              <label for="formGroupExampleInput">Price ราคา</label>
+              <input type="text" class="form-control" id="chage_price" value="">
+            </div>
+            
+            <div class="form-group">
+              <label for="formGroupExampleInput">StockCount จำนวนสินค้า</label>
+              <input type="text" class="form-control" id="chage_stock" value="">
+            </div>
+               
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="save()">SAVE</button>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+</section>
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable( {
+        dom: 'Bfrtip',
+        buttons: [
+            'copyHtml5',
+            'excelHtml5',
+            'csvHtml5',
+            'pdfHtml5'
+        ]
+    } );
+} );
+var id_save;
+function Chage_data(data){
+    console.log(data)
+    id_save = data;
+    $('#modalcreate').modal('show');
+}
+function delete_data(id){
+
+const swalWithBootstrapButtons = Swal.mixin({
+  customClass: {
+    confirmButton: 'btn btn-success',
+    cancelButton: 'btn btn-danger'
+  },
+  buttonsStyling: false
+})
+
+swalWithBootstrapButtons.fire({
+  title: 'Are you sure?',
+  text: "You won't be able to revert this!",
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonText: 'Yes, delete it!',
+  cancelButtonText: 'No, cancel!',
+  reverseButtons: true
+}).then((result) => {
+  if (result.isConfirmed) {
+      $.ajax({
+        type: "POST",
+        url: "/Product/", 
+        dataType: 'json',
+            async: false,
+            //json object to sent to the authentication url
+            data: {
+               csrfmiddlewaretoken: '{{ csrf_token }}' ,
+               "action":'delete',
+               "id":id,
+            },
+        success: function(data)
+        {	
+            if(data['data']=='ok'){
+              
+                swalWithBootstrapButtons.fire(
+                  'Deleted!',
+                  'Your file has been deleted.',
+                  'success'
+                     )
+                location.reload();
+                }else{
+                        swalWithBootstrapButtons.fire(
+                          'Cancelled',
+                          'Not found data',
+                          'error')
+                }
+        }
+    });
+      // alert(1234)
+  } else if (
+    /* Read more about handling dismissals below */
+    result.dismiss === Swal.DismissReason.cancel
+  ) {
+    
+  }
+})
+}
+function save(){
+    $.ajax({
+		    type: "POST",
+		    url: "/Product/", 
+		    dataType: 'json',
+		        async: false,
+		        //json object to sent to the authentication url
+		        data: {
+		           csrfmiddlewaretoken: '{{ csrf_token }}' ,
+		           "action":'edit',
+		           "id": id_save,
+		           "price": $('#chage_price').val(),
+		           "qty": $('#chage_stock').val(),
+		           
+		        },
+		    success: function(data)
+		    {	
+		    	if(data['data']=='ok'){
+					
+                    Swal.fire(
+                        'Success',
+                        'บันทึกข้อมูลสำเร็จ',
+                        'success'                          
+                        )
+                    $("#modalcreate").modal('toggle');
+                    location.href = "/Product/";
+				    }else{
+                        Swal.fire(
+                        'Not Complete',
+                        'บันทึกข้อมูลไม่สำเร็จ',
+                        'error'                          
+                        )
+                        location.href = "/Product/";
+				    }
+		    }
+		});
+}
+</script>
+{% endblock content%}
