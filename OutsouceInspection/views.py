@@ -13,7 +13,7 @@ from django.conf import settings
 import os
 from datetime import datetime
 from django.db.models import Q
-from fpdf import FPDF
+
 # Create your views here.
 def login(request):
     if request.method == 'POST':
